@@ -2,7 +2,7 @@
 
 **An Unrestricted AI Assistant**
 
-NOVA is a lightweight, high-aesthetic, and unrestricted AI chat interface with use of Groq API designed for power users who want direct, honest, and moralizing-free interactions with LLMs. Built to provide a minimalist and fast experience, NOVA runs locally in your browser and puts you in control of your AI experience.
+NOVA is a lightweight, high-aesthetic, and unrestricted AI chat interface devloped by Jashan with use of Groq API designed for power users who want direct, honest, and moralizing-free interactions with LLMs. Built to provide a minimalist and fast experience, NOVA runs locally in your browser and puts you in control of your AI experience.
 
 ## 🚀 How to Use
 
