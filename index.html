@@ -101,8 +101,8 @@
 
 <script>
     let API_KEY = "";
-    // Updated to a current active, super-fast model ID
-    const MODEL = "llama-3.1-8b-instant";
+    // Updated to a currently active production model ID
+    const MODEL = "openai/gpt-oss-20b";
     let currentSess = null;
     let messages = [];
     let sessions = JSON.parse(localStorage.getItem('nova_aesthetic_v1') || '{}');
@@ -158,7 +158,6 @@
 
             const d = await r.json();
             
-            // Added check if Groq returned an error payload back
             if (d.error) {
                 throw new Error(d.error.message || "Groq API error occurred.");
             }
@@ -234,5 +233,5 @@
     updateList(); newChat();
 </script>
 </body>
-</html>
-          
+    </html>
+        
