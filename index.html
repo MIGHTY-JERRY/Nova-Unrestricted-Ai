@@ -59,7 +59,8 @@
         .bar:focus-within { border-color: var(--accent); box-shadow: 0 0 15px rgba(0, 242, 255, 0.1); }
         input[type="text"] { flex: 1; background: transparent; border: none; color: #fff; padding: 12px 0; outline: none; font-size: 16px; }
         .icon-group { display: flex; align-items: center; gap: 15px; margin-left: 10px; }
-        .send-icon, .voice-icon { color: var(--accent); font-size: 22px; cursor: pointer; transition: 0.2s; }
+        .send-icon, .voice-icon { color: var(--accent); font-size: 22px; cursor: pointer; transition: 0.2s; user-select: none; }
+        .send-icon:hover, .voice-icon:hover { opacity: 0.8; }
         .voice-icon.listening { color: #ff0055; animation: pulse 1s infinite; }
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
     </style>
@@ -98,7 +99,8 @@
             <input type="text" id="userInput" placeholder="Ask anything, zero restrictions..." autocomplete="off">
             <div class="icon-group">
                 <div class="voice-icon" id="voiceBtn" onclick="toggleVoice()">🎤</div>
-                <div class="send-icon" onclick="handleSend()">➤</div>
+                <!-- Explicitly wired onclick handler added here -->
+                <div class="send-icon" id="sendBtn" onclick="handleSend()">➤</div>
             </div>
         </div>
     </div>
@@ -110,9 +112,8 @@
     const MODEL = "cognitivecomputations/dolphin-mixtral-8x7b"; 
     let currentSess = null;
     let messages = [];
-    let sessions = JSON.parse(localStorage.getItem('nova_openrouter_v4') || '{}');
+    let sessions = JSON.parse(localStorage.getItem('nova_openrouter_v5') || '{}');
     
-    // Check key status on startup
     window.addEventListener('DOMContentLoaded', () => {
         if(API_KEY && API_KEY.startsWith('sk-or-')) {
             document.getElementById('api-overlay').style.display = 'none';
@@ -158,6 +159,7 @@
     }
 
     async function handleSend() {
+        console.log("handleSend triggered"); // Debug check
         if(!API_KEY) {
             document.getElementById('api-overlay').style.display = 'flex';
             return;
@@ -245,7 +247,7 @@
     }
 
     function save() { 
-        localStorage.setItem('nova_openrouter_v4', JSON.stringify(sessions)); 
+        localStorage.setItem('nova_openrouter_v5', JSON.stringify(sessions)); 
         updateList(); 
     }
 
@@ -288,16 +290,13 @@
         save();
     }
 
-    // Input submission listeners
-    const userInputEl = document.getElementById('userInput');
-    if(userInputEl) {
-        userInputEl.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                handleSend();
-            }
-        });
-    }
+    // Keydown listener for Enter key submission
+    document.getElementById('userInput').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            handleSend();
+        }
+    });
 </script>
 </body>
 </html>
