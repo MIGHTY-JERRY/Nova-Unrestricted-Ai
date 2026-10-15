@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -82,7 +83,7 @@
 <div id="main">
     <div class="nav">
         <div class="menu-icon" onclick="toggleMenu()">☰</div>
-        <div class="logo">NOVA <span>OPENROUTER BY JASHAN</span></div>
+        <div class="logo">NOVA <span>UNRESTRICTED BY JASHAN</span></div>
     </div>
 
     <div id="display"></div>
@@ -99,21 +100,26 @@
 </div>
 
 <script>
-    let API_KEY = "";
+    let API_KEY = localStorage.getItem('nova_or_key') || "";
     const API_URL = "https://openrouter.ai/api/v1/chat/completions";
-    const MODEL = "cognitivecomputations/dolphin-mixtral-8x7b"; // Uncensored high-performance engine on OpenRouter
+    const MODEL = "cognitivecomputations/dolphin-mixtral-8x7b"; 
     let currentSess = null;
     let messages = [];
-    let sessions = JSON.parse(localStorage.getItem('nova_openrouter_v1') || '{}');
+    let sessions = JSON.parse(localStorage.getItem('nova_openrouter_v3') || '{}');
     
+    if(API_KEY) {
+        document.getElementById('api-overlay').style.display = 'none';
+    }
+
     function saveKey() {
         const val = document.getElementById('keyInput').value.trim();
-        if(val) {
+        if(val.startsWith('sk-or-')) {
             API_KEY = val;
+            localStorage.setItem('nova_or_key', API_KEY);
             document.getElementById('api-overlay').style.display = 'none';
             newChat();
         } else {
-            alert("Please enter a valid OpenRouter API key.");
+            alert("Invalid key format! OpenRouter keys must start with 'sk-or-v1-'");
         }
     }
 
@@ -177,7 +183,7 @@
             const d = await r.json();
             
             if (d.error) {
-                throw new Error(d.error.message || "OpenRouter API error occurred.");
+                throw new Error(d.error.message || JSON.stringify(d.error));
             }
 
             const aiText = d.choices[0].message.content;
@@ -188,7 +194,7 @@
             save();
         } catch (e) {
             console.error(e);
-            renderMsg('nova', `<b>SYSTEM ERROR:</b> ${e.message || "Connection lost or invalid API Key."}`);
+            renderMsg('nova', `<b>SYSTEM ERROR:</b> ${e.message}`);
         }
     }
 
@@ -220,7 +226,7 @@
     }
 
     function save() { 
-        localStorage.setItem('nova_openrouter_v1', JSON.stringify(sessions)); 
+        localStorage.setItem('nova_openrouter_v3', JSON.stringify(sessions)); 
         updateList(); 
     }
 
@@ -259,7 +265,14 @@
         save();
     }
 
-    document.getElementById('userInput').addEventListener('keypress', (e) => { if(e.key === 'Enter') handleSend(); });
+    // Fixed Enter key listener binding
+    document.getElementById('userInput').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            handleSend();
+        }
+    });
+
     updateList();
 </script>
 </body>
