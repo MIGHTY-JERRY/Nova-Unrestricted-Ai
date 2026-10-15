@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -26,8 +25,11 @@
         #overlay.open { display: block; }
         #sidebar { width: 0; background: var(--panel); border-right: 1px solid #222; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); position: absolute; height: 100%; z-index: 1000; overflow: hidden; display: flex; flex-direction: column; }
         #sidebar.open { width: 280px; }
-        .side-head { padding: 25px 20px; border-bottom: 1px solid #222; }
+        .side-head { padding: 25px 20px; border-bottom: 1px solid #222; display: flex; flex-direction: column; gap: 10px; }
         .new-chat { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid var(--accent); background: rgba(0,242,255,0.05); color: var(--accent); cursor: pointer; font-weight: 600; font-size: 14px; }
+        .reset-key-btn { width: 100%; padding: 10px; border-radius: 10px; border: 1px solid #444; background: #1a1a1a; color: #aaa; cursor: pointer; font-size: 12px; font-weight: 500; }
+        .reset-key-btn:hover { border-color: #ff5555; color: #ff5555; }
+        
         #history { flex: 1; overflow-y: auto; padding: 15px; }
         .chat-row { padding: 12px; margin-bottom: 8px; border-radius: 10px; background: #181818; display: flex; justify-content: space-between; align-items: center; cursor: pointer; border: 1px solid transparent; transition: 0.2s; }
         .chat-row:active { border-color: var(--accent); background: #222; }
@@ -76,7 +78,10 @@
 <div id="overlay" onclick="toggleMenu()"></div>
 
 <div id="sidebar">
-    <div class="side-head"><button class="new-chat" onclick="newChat()">+ NEW SESSION</button></div>
+    <div class="side-head">
+        <button class="new-chat" onclick="newChat()">+ NEW SESSION</button>
+        <button class="reset-key-btn" onclick="resetKey()">⚙ Change API Key</button>
+    </div>
     <div id="history"></div>
 </div>
 
@@ -105,11 +110,18 @@
     const MODEL = "cognitivecomputations/dolphin-mixtral-8x7b"; 
     let currentSess = null;
     let messages = [];
-    let sessions = JSON.parse(localStorage.getItem('nova_openrouter_v3') || '{}');
+    let sessions = JSON.parse(localStorage.getItem('nova_openrouter_v4') || '{}');
     
-    if(API_KEY) {
-        document.getElementById('api-overlay').style.display = 'none';
-    }
+    // Check key status on startup
+    window.addEventListener('DOMContentLoaded', () => {
+        if(API_KEY && API_KEY.startsWith('sk-or-')) {
+            document.getElementById('api-overlay').style.display = 'none';
+            newChat();
+        } else {
+            document.getElementById('api-overlay').style.display = 'flex';
+        }
+        updateList();
+    });
 
     function saveKey() {
         const val = document.getElementById('keyInput').value.trim();
@@ -121,6 +133,13 @@
         } else {
             alert("Invalid key format! OpenRouter keys must start with 'sk-or-v1-'");
         }
+    }
+
+    function resetKey() {
+        localStorage.removeItem('nova_or_key');
+        API_KEY = "";
+        document.getElementById('api-overlay').style.display = 'flex';
+        toggleMenu();
     }
 
     const recognition = 'webkitSpeechRecognition' in window ? new webkitSpeechRecognition() : null;
@@ -226,12 +245,13 @@
     }
 
     function save() { 
-        localStorage.setItem('nova_openrouter_v3', JSON.stringify(sessions)); 
+        localStorage.setItem('nova_openrouter_v4', JSON.stringify(sessions)); 
         updateList(); 
     }
 
     function updateList() {
         const list = document.getElementById('history');
+        if(!list) return;
         list.innerHTML = "";
         Object.keys(sessions).reverse().forEach(id => {
             const item = document.createElement('div');
@@ -254,7 +274,10 @@
     function newChat() {
         currentSess = null; 
         messages = [];
-        document.getElementById('display').innerHTML = `<div class="msg nova-msg"><b>OPENROUTER ENGINE ACTIVE ✅</b> MODEL: <code>cognitivecomputations/dolphin-mixtral-8x7b</code>. ABSOLUTE UNRESTRICTED MODE. JASHAN 🔥</div>`;
+        const disp = document.getElementById('display');
+        if(disp) {
+            disp.innerHTML = `<div class="msg nova-msg"><b>OPENROUTER ENGINE ACTIVE ✅</b> MODEL: <code>cognitivecomputations/dolphin-mixtral-8x7b</code>. ABSOLUTE UNRESTRICTED MODE. JASHAN 🔥</div>`;
+        }
         if(document.getElementById('sidebar').classList.contains('open')) toggleMenu();
     }
 
@@ -265,15 +288,16 @@
         save();
     }
 
-    // Fixed Enter key listener binding
-    document.getElementById('userInput').addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            handleSend();
-        }
-    });
-
-    updateList();
+    // Input submission listeners
+    const userInputEl = document.getElementById('userInput');
+    if(userInputEl) {
+        userInputEl.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                handleSend();
+            }
+        });
+    }
 </script>
 </body>
 </html>
